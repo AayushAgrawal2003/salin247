@@ -7,16 +7,6 @@ from scipy.signal import find_peaks
 frame_crop = 0.4
 
 def create_denoised_mask(frame):
-    """
-    Takes a video frame (BGR) and creates a binary mask of the green plants,
-    ignoring the top portion of the image and removing noise.
-
-    Args:
-        frame (np.ndarray): The input image/frame from the video.
-
-    Returns:
-        np.ndarray: A denoised binary mask highlighting the plant rows.
-    """
     hsv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_green = np.array([30, 40, 40])
     upper_green = np.array([85, 255, 255])
@@ -37,15 +27,7 @@ def create_denoised_mask(frame):
 
 
 def find_lane_and_centerline_points(mask):
-    """
-    Analyzes horizontal strips of a mask to find the center path and the lanes it's derived from.
 
-    Args:
-        mask (np.ndarray): The binary input mask from create_denoised_mask.
-
-    Returns:
-        tuple: A tuple containing (centerline_points, left_lane_points, right_lane_points).
-    """
     height, width = mask.shape
     strip_height = 100
     y_horizon = int(height * frame_crop)
@@ -92,15 +74,11 @@ def find_lane_and_centerline_points(mask):
     return centerline_points, left_lane_points, right_lane_points
 
 def _normalize_angle(angle_deg):
-    """Normalize an angle to the range [-180, 180]."""
     if angle_deg > 90:
         return angle_deg - 180
     else:
         return angle_deg
 def draw_centerline(frame, centerline_points):
-    """
-    Draws ONLY the final centerline polyline onto a frame.
-    """
     output_image = frame.copy()
     if len(centerline_points) > 1:
         centerline_points.sort(key=lambda p: p[1], reverse=True)
@@ -110,13 +88,8 @@ def draw_centerline(frame, centerline_points):
 
 
 def _draw_original_debug_visuals(frame, centerline_points, left_points, right_points):
-    """
-    (Internal) Draws all the original visual aids: centerline, lane points, and strips.
-    """
-    # First, draw the basic polyline centerline
     output_image = frame.copy()
     
-    # Draw the detected center points as red circles
     for point in centerline_points:
         cv2.circle(output_image, point, 5, (0, 0, 255), -1) # 5px radius red dots
 
@@ -124,7 +97,6 @@ def _draw_original_debug_visuals(frame, centerline_points, left_points, right_po
     strip_height = 100
     y_horizon = int(height * frame_crop)
 
-    # Draw the horizontal strip lines (cyan)
     for y_end in range(height, y_horizon, -strip_height):
         y_start = max(y_horizon, y_end - strip_height)
         cv2.line(output_image, (0, y_start), (width, y_start), (255, 255, 0), 1)
@@ -141,21 +113,7 @@ def _draw_original_debug_visuals(frame, centerline_points, left_points, right_po
     return output_image
 
 def calculate_errors_and_fit(centerline_points, frame_width, frame_height,prev_m=None,prev_b=None,beta=0.2):
-    """
-    Fits a line to the centerline points and calculates CTE and HE.
 
-    Args:
-        centerline_points (list): List of (x, y) coordinates.
-        frame_width (int): Width of the frame.
-        frame_height (int): Height of the frame.
-
-    Returns:
-        tuple: (cte, he, m, b)
-            cte (float): Cross-Track Error in pixels.
-            he (float): Heading Error in degrees.
-            m (float): Slope (dy/dx) of the fitted line.
-            b (float): Y-intercept of the fitted line.
-    """
     cte, he, m, b = None, None, None, None
     
     # We need at least 2 points to fit a line
@@ -198,8 +156,6 @@ def calculate_errors_and_fit(centerline_points, frame_width, frame_height,prev_m
             b = beta * b + (1-beta) * prev_b
         
         # print(m,b,len(filtered_points))
-        # 1. Calculate Cross-Track Error (CTE)
-        # Find the line's x-value at the bottom of the frame (y = frame_height)
         if m == 0:
             cte = None # Cannot calculate CTE for a horizontal line
         else:
@@ -207,12 +163,8 @@ def calculate_errors_and_fit(centerline_points, frame_width, frame_height,prev_m
             robot_x = frame_width / 2
             cte = robot_x - centerline_x_at_bottom
 
-        # 2. Calculate Heading Error (HE)
-        # The angle of the line relative to the horizontal (x-axis)
         path_angle_deg = np.degrees(np.arctan(m))
         
-        # The robot's heading is straight up (negative y-direction),
-        # which is -90 degrees from the horizontal x-axis.
         robot_heading_deg = -90.0
         
         # The heading error is the difference
@@ -228,9 +180,7 @@ def calculate_errors_and_fit(centerline_points, frame_width, frame_height,prev_m
 
 
 def draw_debug_frame(frame, center_pts, left_pts, right_pts, m, b):
-    """
-    FRAME 1: Draws all debug info PLUS the fitted line.
-    """
+
     # 1. Draw all the original detection visuals
     output_image = _draw_original_debug_visuals(frame, center_pts, left_pts, right_pts)
     
@@ -259,9 +209,7 @@ def draw_debug_frame(frame, center_pts, left_pts, right_pts, m, b):
 
 
 def draw_servo_frame(frame, cte, he, m, b):
-    """
-    FRAME 2: Draws minimal robot vs. path vectors and errors over the original video.
-    """
+
     # 1. Use the original frame as the background
     height, width, _ = frame.shape
     output_image = frame.copy()
@@ -286,7 +234,6 @@ def draw_servo_frame(frame, cte, he, m, b):
     cte_text = f"Cross-Track Error: {cte:.2f} px" if cte is not None else "CTE: N/A"
     he_text = f"Heading Error: {he:.2f} deg" if he is not None else "HE: N/A"
     
-    # Add a semi-transparent background for the text
     cv2.rectangle(output_image, (40, 30), (600, 120), (0, 0, 0), -1)
     cv2.addWeighted(output_image, 1, output_image, 0.7, 0, output_image)
     
