@@ -43,6 +43,54 @@ def plot_error_graphs(cte_data, he_data):
     plt.tight_layout()
     print("Displaying error plots. Close the plot window to exit.")
     plt.show()
+def process_image(image_path, output_dir="output", beta=0.2):
+    """
+    Processes a single image to detect the crop row centerline and saves
+    the resulting debug and servo view images.
+    """
+    print(f"Processing image: {image_path}")
+    frame = cv2.imread(image_path)
+    if frame is None:
+        print(f"Error: Could not read image file at {image_path}")
+        return
+
+    # --- 1. Main Processing Pipeline ---
+    mask = utils.create_denoised_mask(frame)
+    center_pts, left_pts, right_pts = utils.find_lane_and_centerline_points(mask)
+
+    # --- 2. Fit Line and Calculate Errors ---
+    # For a single image, there are no "previous" line parameters.
+    frame_height, frame_width, _ = frame.shape
+    cte, he, m, b = utils.calculate_errors_and_fit(center_pts, frame_width, frame_height, prev_m=None, prev_b=None, beta=beta)
+
+    if cte is not None and he is not None:
+        print(f"Calculated Errors -> CTE: {cte:.2f} pixels, HE: {he:.2f} degrees")
+    else:
+        print("Could not calculate errors for this image.")
+
+    # --- 3. Generate both frames ---
+    debug_frame = utils.draw_debug_frame(frame, center_pts, left_pts, right_pts, m, b)
+    servo_frame = utils.draw_servo_frame(frame, cte, he, m, b)
+
+    # --- 4. Save the output images ---
+    os.makedirs(output_dir, exist_ok=True)
+    base_filename = os.path.splitext(os.path.basename(image_path))[0]
+    
+    debug_output_path = os.path.join(output_dir, f"{base_filename}_debug.jpg")
+    servo_output_path = os.path.join(output_dir, f"{base_filename}_servo.jpg")
+
+    cv2.imwrite(debug_output_path, debug_frame)
+    cv2.imwrite(servo_output_path, servo_frame)
+    print(f"Saved debug image to: {debug_output_path}")
+    print(f"Saved servo image to: {servo_output_path}")
+
+    # --- 5. Display the frames ---
+    cv2.imshow('Debug Frame', debug_frame)
+    cv2.imshow('Servo View', servo_frame)
+    print("Displaying images. Press any key to exit.")
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 
 def process_video(video_path, output_clean_path=None, output_debug_path=None,beta=0.2,save_servo_frames_path=None, save_debug_frames_path=None):
     """
@@ -117,9 +165,9 @@ def process_video(video_path, output_clean_path=None, output_debug_path=None,bet
         # --- 4. Display the frames ---
         cv2.imshow('Debug Frame', debug_frame)
         cv2.imshow('Servo View', servo_frame)
-        if frame_count%10 == 0:
-            frames_debug.append(debug_frame)
-            frames_servo.append(servo_frame)
+        # if frame_count%10 == 0:
+        #     frames_debug.append(debug_frame)
+        #     frames_servo.append(servo_frame)
             
         # --- 5. Write frames to output files if specified ---
         if clean_writer:
@@ -141,11 +189,11 @@ def process_video(video_path, output_clean_path=None, output_debug_path=None,bet
         # --- NEW: Increment frame counter ---
         frame_count += 1
         
-    gif_path = "output_debug.gif"
-    imageio.mimsave(gif_path, frames_debug, fps=15)  # adjust fps to control speed
-    gif_path = "output_servo.gif"
-    imageio.mimsave(gif_path, frames_servo, fps=15)  # adjust fps to control speed
-    print(f"Saved GIF as {gif_path}")
+    # gif_path = "output_debug.gif"
+    # imageio.mimsave(gif_path, frames_debug, fps=15)  # adjust fps to control speed
+    # gif_path = "output_servo.gif"
+    # imageio.mimsave(gif_path, frames_servo, fps=15)  # adjust fps to control speed
+    # print(f"Saved GIF as {gif_path}")
 
     # --- Cleanup ---
     cap.release()
@@ -159,32 +207,43 @@ def process_video(video_path, output_clean_path=None, output_debug_path=None,bet
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Detect centerline in agricultural video footage.")
-    parser.add_argument('-i', '--input', type=str, required=True, help="Path to the input video file.")
-    parser.add_argument(
-        '-oc', '--output_clean', 
-        type=str, 
-        help="Path to save the clean servo output video."
-    )
-    parser.add_argument(
-        '-od', '--output_debug', 
-        type=str, 
-        help="Path to save the detailed debug output video."
-    )
+    parser = argparse.ArgumentParser(description="Detect centerline in agricultural video or image footage.")
+    parser.add_argument('-i', '--input', type=str, required=True, help="Path to the input video or image file.")
     
-    parser.add_argument(
-        '--save_servo_frames', 
-        type=str, 
-        help="Path to a directory to save individual servo frames."
-    )
-    parser.add_argument(
-        '--save_debug_frames', 
-        type=str, 
-        help="Path to a directory to save individual debug frames."
-    )
+    # --- Arguments for VIDEO processing ---
+    parser.add_argument('-oc', '--output_clean', type=str, help="[Video Only] Path to save the clean servo output video.")
+    parser.add_argument('-od', '--output_debug', type=str, help="[Video Only] Path to save the detailed debug output video.")
+    parser.add_argument('--save_servo_frames', type=str, help="[Video Only] Path to save individual servo frames.")
+    parser.add_argument('--save_debug_frames', type=str, help="[Video Only] Path to save individual debug frames.")
     
+    # --- Arguments for IMAGE processing ---
+    parser.add_argument('-o', '--output', type=str, default="output_images", help="[Image Only] Directory to save output images.")
+
     args = parser.parse_args()
-    for i in [0.2]:
-        cte_data, he_data = process_video(args.input, args.output_clean, args.output_debug,beta=i,save_servo_frames_path=args.save_servo_frames,save_debug_frames_path=args.save_debug_frames)
-        plot_error_graphs(cte_data[100:],he_data[100:])
+
+    # --- Determine file type and call the appropriate function ---
+    input_path = args.input
+    file_extension = os.path.splitext(input_path)[1].lower()
     
+    video_extensions = ['.mp4', '.avi', '.mov', '.mkv']
+    image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff']
+
+    if file_extension in video_extensions:
+        print("Video file detected. Starting video processing...")
+        cte_data, he_data = process_video(
+            args.input, 
+            args.output_clean, 
+            args.output_debug, 
+            beta=0.2, # Or make this an argument
+            save_servo_frames_path=args.save_servo_frames, 
+            save_debug_frames_path=args.save_debug_frames
+        )
+        if cte_data and he_data:
+            plot_error_graphs(cte_data[100:], he_data[100:])
+
+    elif file_extension in image_extensions:
+        print("Image file detected. Starting image processing...")
+        process_image(args.input, output_dir=args.output, beta=0.2)
+
+    else:
+        print(f"Error: Unsupported file type '{file_extension}'. Please provide a valid video or image file.")

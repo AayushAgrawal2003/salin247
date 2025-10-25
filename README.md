@@ -50,12 +50,14 @@ The script is run from the command line.
 
 ```bash
 python main.py -i <path_to_video> -od <output_debug_video_path> -oc <output_servo_video_path>
+python main.py -i <path_to_image> -od <output_debug_image_path> -oc <output_servo_image_path>
 ```
 
 **Example:**
 
 ```bash
 python main.py -i test_video.mp4 -od output/debug_video.mp4 -oc output/servo_video.mp4 --save_debug_frames output/problem_frames
+python main.py --input ../Images/Reference.png
 ```
 
 ### Command-Line Arguments
