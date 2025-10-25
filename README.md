@@ -3,8 +3,8 @@
 This project is a solution for a computer vision programming assignment to develop a visual servoing algorithm for an autonomous agricultural robot. The algorithm processes a front-facing camera feed to keep the robot centered between two crop rows by calculating **Heading Error** and **Cross-Track Error**.
 
 <!-- <video controls src="Final/output.mp4" title="Title"></video> -->
-![Demo](Final/output.mp4)
-
+<!-- ![Demo](Final/output.mp4) -->
+![alt text](Final/preview.gif)
 ## Features
 
 -   **Robust Lane Detection:** Uses a novel strip-based local peak detection method, making it resilient to noise and perspective changes.
