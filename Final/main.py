@@ -5,6 +5,8 @@ import argparse
 import utils # Our custom utility functions
 import matplotlib.pyplot as plt
 import os
+import imageio
+
 
 def plot_error_graphs(cte_data, he_data):
     """
@@ -86,7 +88,8 @@ def process_video(video_path, output_clean_path=None, output_debug_path=None,bet
     he_holder = []
     # --- Process Video Frame by Frame ---
     frame_count = 0
-
+    frames_debug = []
+    frames_servo  = []
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -114,7 +117,10 @@ def process_video(video_path, output_clean_path=None, output_debug_path=None,bet
         # --- 4. Display the frames ---
         cv2.imshow('Debug Frame', debug_frame)
         cv2.imshow('Servo View', servo_frame)
-        
+        if frame_count%10 == 0:
+            frames_debug.append(debug_frame)
+            frames_servo.append(servo_frame)
+            
         # --- 5. Write frames to output files if specified ---
         if clean_writer:
             clean_writer.write(servo_frame)
@@ -134,6 +140,12 @@ def process_video(video_path, output_clean_path=None, output_debug_path=None,bet
             
         # --- NEW: Increment frame counter ---
         frame_count += 1
+        
+    gif_path = "output_debug.gif"
+    imageio.mimsave(gif_path, frames_debug, fps=15)  # adjust fps to control speed
+    gif_path = "output_servo.gif"
+    imageio.mimsave(gif_path, frames_servo, fps=15)  # adjust fps to control speed
+    print(f"Saved GIF as {gif_path}")
 
     # --- Cleanup ---
     cap.release()

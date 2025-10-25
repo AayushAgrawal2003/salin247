@@ -252,9 +252,9 @@ def draw_debug_frame(frame, center_pts, left_pts, right_pts, m, b):
         # Draw the fitted vector (green arrow)
         cv2.arrowedLine(output_image, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 4, tipLength=0.1)
         
-        start_point = (int(x1), 0)
-        end_point = (int(x1), height - 1)
-        cv2.line(output_image, start_point, end_point, (255, 0, 255), 2)
+        # start_point = (int(x1), 0)
+        # end_point = (int(x1), height - 1)
+        # cv2.line(output_image, start_point, end_point, (255, 0, 255), 2)
         
 
     return output_image
