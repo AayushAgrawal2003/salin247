@@ -1,8 +1,9 @@
 # Visual Servoing for Agricultural Navigation
 
 This project is a solution for a computer vision programming assignment to develop a visual servoing algorithm for an autonomous agricultural robot. The algorithm processes a front-facing camera feed to keep the robot centered between two crop rows by calculating **Heading Error** and **Cross-Track Error**.
-<img src="Final/output_servo.gif" alt="drawing" width="200"/>
-<img src="Final/output_debug.gif" alt="drawing" width="200"/>
+
+<!-- <img src="Final/output_servo.gif" alt="drawing" width="500"/> -->
+<img src="https://youtu.be/qHs7QrMkym8" alt="drawing" width="500"/>
 
 ## Features
 
@@ -13,7 +14,7 @@ This project is a solution for a computer vision programming assignment to devel
     -   **Debug View:** A detailed visualization showing all detected points, image strips, and the final fitted path vector.
     -   **Servo View:** A clean, minimal overlay showing only the robot's intended path vs. the detected path and the final error values, suitable for an operator.
 -   **Performance Analysis:** Automatically generates plots for Cross-Track Error and Heading Error over time upon completion.
-
+g9
 ## Algorithm Breakdown
 
 The core pipeline processes each frame as follows:
