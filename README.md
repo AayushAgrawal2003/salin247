@@ -2,8 +2,7 @@
 
 This project is a solution for a computer vision programming assignment to develop a visual servoing algorithm for an autonomous agricultural robot. The algorithm processes a front-facing camera feed to keep the robot centered between two crop rows by calculating **Heading Error** and **Cross-Track Error**.
 
-<!-- <img src="Final/output_servo.gif" alt="drawing" width="500"/> -->
-<img src="https://youtu.be/qHs7QrMkym8" alt="drawing" width="500"/>
+<video controls src="Final/output.mp4" title="Title"></video>
 
 ## Features
 
