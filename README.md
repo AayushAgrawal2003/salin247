@@ -49,6 +49,7 @@ The core pipeline processes each frame as follows:
 The script is run from the command line.
 
 ```bash
+cd main
 python main.py -i <path_to_video> -od <output_debug_video_path> -oc <output_servo_video_path>
 python main.py -i <path_to_image> -od <output_debug_image_path> -oc <output_servo_image_path>
 ```
