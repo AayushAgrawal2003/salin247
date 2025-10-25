@@ -255,8 +255,6 @@ def draw_debug_frame(frame, center_pts, left_pts, right_pts, m, b):
         # start_point = (int(x1), 0)
         # end_point = (int(x1), height - 1)
         # cv2.line(output_image, start_point, end_point, (255, 0, 255), 2)
-        
-
     return output_image
 
 

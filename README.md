@@ -15,7 +15,7 @@ High Quality output available at: https://youtu.be/qHs7QrMkym8
     -   **Debug View:** A detailed visualization showing all detected points, image strips, and the final fitted path vector.
     -   **Servo View:** A clean, minimal overlay showing only the robot's intended path vs. the detected path and the final error values, suitable for an operator.
 -   **Performance Analysis:** Automatically generates plots for Cross-Track Error and Heading Error over time upon completion.
-g9
+
 ## Algorithm Breakdown
 
 The core pipeline processes each frame as follows:
