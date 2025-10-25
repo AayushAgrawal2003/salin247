@@ -2,8 +2,9 @@
 
 This project is a solution for a computer vision programming assignment to develop a visual servoing algorithm for an autonomous agricultural robot. The algorithm processes a front-facing camera feed to keep the robot centered between two crop rows by calculating **Heading Error** and **Cross-Track Error**.
 
-<!-- <video controls src="Final/output.mp4" title="Title"></video> -->
-<!-- ![Demo](Final/output.mp4) -->
+High Quality output available at: https://youtu.be/qHs7QrMkym8 
+
+
 ![alt text](Final/preview.gif)
 ## Features
 
@@ -85,7 +86,7 @@ My approach to this problem evolved as I uncovered and solved challenges, leadin
 * **Problem:** The initial mask was very noisy. It contained many small, isolated white pixels in the soil areas and had gaps within the actual crop rows. This noise would interfere with any attempt to find the rows' centers.
 * **Solution:** I applied **morphological operations** (`MORPH_OPEN` and `MORPH_CLOSE`). This "denoising" step effectively removed the small spurious pixels and filled in the gaps within the rows, resulting in a clean, solid mask to work with.
 
-![Denoised Mask](./Final/output_visuals/1_denoised_mask.png)
+![Denoised Mask](./main/output_visuals/1_denoised_mask.png)
 
 
 ---
@@ -96,7 +97,7 @@ My approach to this problem evolved as I uncovered and solved challenges, leadin
 * **Initial Approach:** My first idea was to create a **global vertical projection**. I summed up all the white pixel values along the y-axis to create a 1D plot of pixel intensity across the width of the image. The plan was to find the two highest peaks in this plot, assuming they would be the two central crop rows.
 * **Problem:** This approach was **highly unreliable**. It was easily thrown off by perspective distortion (where distant rows look closer together) and variations in plant density. It often failed to correctly identify the two central rows, leading to a completely inaccurate and unstable centerline.
 
-![Global Projection Plot](./Final/output_visuals/2_global_projection_plot.png)
+![Global Projection Plot](./main/output_visuals/2_global_projection_plot.png)
 
 ---
 
@@ -106,7 +107,7 @@ My approach to this problem evolved as I uncovered and solved challenges, leadin
 * **Solution:** Instead of one global projection, I developed an innovative **strip-based local detection method**. I divided the lower half of the image into horizontal strips and performed the intensity projection *locally within each strip*. This broke the big, unreliable problem into a series of smaller, more manageable ones.
 * **Result:** Within each narrow strip, it was much easier to find the two correct peaks corresponding to the crop rows. I then calculated the midpoint between these two peaks to get a single, accurate centerline point for that strip. Repeating this process for all strips gave me a robust set of points mapping the path.
 
-![Strip-Based Detection](./Final/output_visuals/3_strip_based_points.png)
+![Strip-Based Detection](./main/output_visuals/3_strip_based_points.png)
 
 ---
 
@@ -116,7 +117,7 @@ My approach to this problem evolved as I uncovered and solved challenges, leadin
 * **Problem:** I noticed that in some frames, the detection in one of the strips would fail and incorrectly identify an adjacent crop row. This created an "outlier" point that would dramatically skew the final fitted line, causing it to jump erratically.
 * **Solution:** I implemented a **Z-score filter**. Before fitting the line to the centerline points, this statistical method calculates how far each point is from the average. Any point that is a significant outlier is automatically discarded. This simple fix made the line fitting much more stable and immune to single-point detection failures.
 
-![Final Fitted Line](./Final/output_visuals/4_final_fitted_line.png)
+![Final Fitted Line](./main/output_visuals/4_final_fitted_line.png)
 
 ---
 
@@ -126,4 +127,4 @@ My approach to this problem evolved as I uncovered and solved challenges, leadin
 * **Problem:** While the detection was now spatially robust, when processing a video, small variations between frames still caused the final CTE and HE values to be "jittery." This high-frequency noise would be unsuitable for a real robot's control system.
 * **Solution:** I implemented an **exponential moving average** on the line's slope and intercept parameters. The parameters for the current frame are a weighted average of the new measurement and the values from the previous frame. This acts as a low-pass filter, smoothing out the jitter and providing a stable, fluid output that is ideal for visual servoing.
 
-![Temporal Smoothing Plot](./Final/output_visuals/5_temporal_smoothing_concept.png)
+![Temporal Smoothing Plot](./main/output_visuals/5_temporal_smoothing_concept.png)

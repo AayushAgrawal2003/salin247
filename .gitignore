@@ -1,2 +1,5 @@
 Images/
 Videos/
+.DS_store/
+*.gif
+/__pycache__/
