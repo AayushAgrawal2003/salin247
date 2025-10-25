@@ -5,7 +5,7 @@ This project is a solution for a computer vision programming assignment to devel
 High Quality output available at: https://youtu.be/qHs7QrMkym8 
 
 
-![alt text](Final/preview.gif)
+![alt text](main/preview.gif)
 ## Features
 
 -   **Robust Lane Detection:** Uses a novel strip-based local peak detection method, making it resilient to noise and perspective changes.
