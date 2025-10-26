@@ -6,6 +6,8 @@ High Quality output available at: https://youtu.be/qHs7QrMkym8
 
 
 ![alt text](main/preview.gif)
+![alt text](main/output_images/Reference_servo.jpg)
+![alt text](main/output_images/Reference_debug.jpg)
 ## Features
 
 -   **Robust Lane Detection:** Uses a novel strip-based local peak detection method, making it resilient to noise and perspective changes.
