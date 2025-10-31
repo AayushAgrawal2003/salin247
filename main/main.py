@@ -2,7 +2,7 @@
 
 import cv2
 import argparse
-import utils # Our custom utility functions
+import utils
 import matplotlib.pyplot as plt
 import os
 import imageio
